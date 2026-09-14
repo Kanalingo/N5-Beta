@@ -320,11 +320,19 @@
     if (!audioUrl) { speakTTS(text, rate); return; }
     try {
       var a = new Audio(audioUrl);
-      a.playbackRate = rate || 1.0;
+      var r = rate || 1.0;
+      a.preservesPitch = false;
+      a.mozPreservesPitch = false;
+      a.webkitPreservesPitch = false;
+      a.playbackRate = r;
+      a.addEventListener('loadedmetadata', function () { a.playbackRate = r; });
+      a.addEventListener('play', function () { a.playbackRate = r; });
+      a.addEventListener('canplay', function () { a.playbackRate = r; });
       var p = a.play();
       if (p && typeof p.catch === 'function') {
         p.catch(function () { speakTTS(text, rate); });
       }
+      setTimeout(function () { try { a.playbackRate = r; } catch (e2) {} }, 50);
     } catch (e) {
       speakTTS(text, rate);
     }
@@ -1413,7 +1421,7 @@
         '<button class="kn5-play-btn kn5-slow-btn" data-say-slow="' + plainReading.replace(/"/g, '&quot;') + '">Listen: slow</button>' +
         '<button class="kn5-play-btn kn5-chunk-btn">Listen: by chunks</button>';
       card.querySelector('[data-say]').addEventListener('click', function () { speakSentence(s, 1.0); });
-      card.querySelector('.kn5-slow-btn').addEventListener('click', function () { speakSentence(s, 0.35); });
+      card.querySelector('.kn5-slow-btn').addEventListener('click', function () { speakSentence(s, 0.6); });
       card.querySelector('.kn5-chunk-btn').addEventListener('click', function () { speakSequence(chunkReadings(s)); });
       body.appendChild(card);
     });
